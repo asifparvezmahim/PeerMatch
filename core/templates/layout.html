@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PeerMatch - Research Collaboration Platform</title>
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+</head>
+
+<body>
+    <div class="container">
+        <nav class="glass">
+            <a href="{% url 'index' %}" class="logo">PeerMatch</a>
+            <ul class="nav-links">
+                <li><a href="{% url 'index' %}">Home</a></li>
+                {% if request.user.is_authenticated %}
+                <li><a href="{% url 'researchers' %}">Find Researchers</a></li>
+                <li><a href="{% url 'my_profile' %}">My Profile</a></li>
+                <li><a href="{% url 'messages' %}">💬 Messages</a></li>
+                {% if request.user.role == 'admin' %}
+                <li><a href="{% url 'admin_dashboard' %}">Admin</a></li>
+                {% endif %}
+                <li><a href="{% url 'logout' %}" class="btn btn-outline" style="padding: 0.4rem 1rem;">Logout</a>
+                </li>
+                {% else %}
+                <li><a href="{% url 'login' %}">Login</a></li>
+                <li><a href="{% url 'register' %}" class="btn btn-primary" style="padding: 0.4rem 1rem;">Join
+                        Now</a></li>
+                {% endif %}
+                <!-- Theme Toggle -->
+                <li>
+                    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()"
+                        title="Toggle light/dark mode">🌙</button>
+                </li>
+            </ul>
+        </nav>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} animate">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer
+            style="text-align: center; margin-top: 4rem; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+            <p>&copy; 2026 PeerMatch Platform. Connecting Researchers Globally.</p>
+        </footer>
+    </div>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        // Theme toggle
+        const savedTheme = localStorage.getItem('pm-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeToggle').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('pm-theme', next);
+            document.getElementById('themeToggle').textContent = next === 'dark' ? '🌙' : '☀️';
+        }
+    </script>
+</body>
+
+</html>

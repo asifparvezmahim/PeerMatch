@@ -1,0 +1,145 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="animate" style="max-width: 900px; margin: 0 auto;">
+
+    <!-- Idea Header -->
+    <div class="glass" style="padding: 2.5rem; margin-bottom: 2rem;">
+        <div
+            style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <span class="tag" style="margin-bottom: 1rem; display: inline-block;">{{ idea.field }}</span>
+                <h1 style="font-size: 2rem; color: var(--primary-color); margin-bottom: 0.5rem;">{{ idea.title }}</h1>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">
+                    Posted on {{ idea.date_posted|date:"F d, Y" }}
+                    by <a href="{% url 'profile' user_id=idea.author.id %}"
+                        style="color: var(--primary-color); text-decoration: none; font-weight: 600;">{{
+                        idea.author.name }}</a>
+                    ({{ idea.author.institution }})
+                </p>
+            </div>
+            <div style="flex-shrink: 0; display: flex; gap: 1rem; align-items: center;">
+                <div style="text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);">{{ collab_count }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Collaborators</div>
+                </div>
+                {% if request.user.is_authenticated and idea.author.id != request.user.id %}
+                <a href="{% url 'request_collab' idea_id=idea.id %}" class="btn btn-primary">Request
+                    Collaboration</a>
+                <a href="{% url 'conversation' user_id=idea.author.id %}" class="btn btn-outline">Message
+                    Author</a>
+                {% elif not request.user.is_authenticated %}
+                <a href="{% url 'login' %}" class="btn btn-primary">Login to Collaborate</a>
+                {% else %}
+                <a href="{% url 'edit_idea' id=idea.id %}" class="btn btn-outline">Edit Idea</a>
+                {% endif %}
+            </div>
+        </div>
+        {% if idea.keywords %}
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            {% for kw in idea.keywords_list %}
+            <span class="tag" style="font-size: 0.75rem;">{{ kw }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+        <!-- Left Column -->
+        <div>
+            <!-- Abstract -->
+            <div class="glass" style="padding: 2rem; margin-bottom: 2rem;">
+                <h2 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.2rem;">Abstract / Description
+                </h2>
+                <p style="color: var(--text-muted); line-height: 1.8; white-space: pre-wrap;">{{ idea.description }}</p>
+            </div>
+
+            <!-- Progress -->
+            {% if idea.progress %}
+            <div class="glass" style="padding: 2rem; margin-bottom: 2rem;">
+                <h2 style="color: var(--success); margin-bottom: 1rem; font-size: 1.2rem;">✅ Work Done So Far</h2>
+                <p style="color: var(--text-muted); line-height: 1.8; white-space: pre-wrap;">{{ idea.progress }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Help Needed -->
+            {% if idea.help_needed %}
+            <div class="glass" style="padding: 2rem; margin-bottom: 2rem; border-color: rgba(0, 212, 255, 0.3);">
+                <h2 style="color: var(--warning); margin-bottom: 1rem; font-size: 1.2rem;">🤝 Where Help is Needed</h2>
+                <p style="color: var(--text-muted); line-height: 1.8; white-space: pre-wrap;">{{ idea.help_needed }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column -->
+        <div>
+            <!-- Skills Needed -->
+            <div class="glass" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+                <h3 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1rem;">🛠️ Skills Needed</h3>
+                {% if idea.skills_needed %}
+                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                    {% for skill in idea.skills_needed_list %}
+                    <span class="tag"
+                        style="font-size: 0.75rem; background: rgba(0,212,255,0.1); color: var(--primary-color);">{{
+                        skill }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Not specified</p>
+                {% endif %}
+            </div>
+
+            <!-- Expertise Needed -->
+            <div class="glass" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+                <h3 style="color: var(--secondary-color); margin-bottom: 1rem; font-size: 1rem;">🎓 Expertise Needed
+                </h3>
+                {% if idea.expertise_needed %}
+                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                    {% for ex in idea.expertise_needed_list %}
+                    <span class="tag"
+                        style="font-size: 0.75rem; background: rgba(112,0,255,0.1); color: var(--secondary-color);">{{
+                        ex }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Not specified</p>
+                {% endif %}
+            </div>
+
+            <!-- Author Card -->
+            <div class="glass" style="padding: 1.5rem;">
+                <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-muted);">About the Author</h3>
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <div
+                        style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0;">
+                        {% if idea.author.profile_pic %}
+                        <img src="{{ idea.author.profile_pic.url }}"
+                            style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                        {% else %}
+                        {{ idea.author.name|slice:":2"|upper }}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p style="font-weight: 600;">{{ idea.author.name }}</p>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">{{ idea.author.research_field }}</p>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">{{ idea.author.institution }}</p>
+                    </div>
+                </div>
+                {% if idea.author.skillset %}
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">Skills</p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.3rem;">
+                        {% for s in idea.author.skillset_list|slice:":5" %}
+                        <span class="tag" style="font-size: 0.7rem;">{{ s }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                <a href="{% url 'profile' user_id=idea.author.id %}" class="btn btn-outline"
+                    style="width: 100%; margin-top: 1rem; padding: 0.5rem; font-size: 0.85rem;">View Full Profile</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

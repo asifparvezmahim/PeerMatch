@@ -1,0 +1,130 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<header style="text-align: center; margin-bottom: 3rem;" class="animate">
+    <h1 style="font-size: 3.2rem; margin-bottom: 1rem;">Find Your Research
+        <span
+            style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Match.</span>
+    </h1>
+    <p style="font-size: 1.1rem; color: var(--text-muted); max-width: 650px; margin: 0 auto;">Share ideas, find
+        collaborators, and accelerate scientific progress together.</p>
+</header>
+
+<!-- Search & Filter -->
+<div class="glass" style="padding: 1.75rem; margin-bottom: 2.5rem;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: end;">
+        <div class="form-group" style="margin-bottom: 0;">
+            <label>Search Ideas or Researchers</label>
+            <input type="text" id="searchInput" placeholder="Keywords, title, or researcher name..."
+                oninput="filterIdeas()">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <label>Research Field</label>
+            <select id="fieldFilter" onchange="filterIdeas()">
+                <option value="">All Fields</option>
+                {% for f in RESEARCH_FIELDS %}
+                <option value="{{ f }}">{{ f }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-outline"
+                onclick="document.getElementById('searchInput').value='';document.getElementById('fieldFilter').value='';filterIdeas()">Clear</button>
+            {% if request.user.is_authenticated %}
+            <a href="{% url 'new_idea' %}" class="btn btn-primary">+ Post Idea</a>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Researcher search hint -->
+    <div id="researcherHint"
+        style="display: none; margin-top: 1rem; padding: 0.75rem; border-radius: 0.5rem; background: rgba(0,212,255,0.08); color: var(--text-muted); font-size: 0.85rem;">
+        💡 Searching by name? <a href="#" id="researcherLink" style="color: var(--primary-color);">Browse all
+            researchers matching this name →</a>
+    </div>
+</div>
+
+<!-- Ideas Grid -->
+<div class="grid" id="ideasGrid">
+    {% for idea in ideas %}
+    <div class="glass card animate idea-card" style="animation-delay: {{ forloop.counter0|add:0 }}s; cursor: pointer;"
+        data-field="{{ idea.field }}" data-keywords="{{ idea.keywords|default:''|lower }}"
+        data-title="{{ idea.title|lower }}" data-author="{{ idea.author.name|lower }}"
+        onclick="window.location='{% url 'idea_detail' idea_id=idea.id %}'">
+        <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <span class="tag">{{ idea.field }}</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">{{ idea.date_posted|date:"M d, Y" }}</span>
+        </div>
+        <h3 style="margin-bottom: 0.75rem; color: var(--primary-color);">{{ idea.title }}</h3>
+        <p
+            style="color: var(--text-muted); font-size: 0.9rem; flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 1rem;">
+            {{ idea.description }}</p>
+        {% if idea.skills_needed %}
+        <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 1rem;">
+            {% for s in idea.skills_needed_list|slice:":3" %}
+            <span class="tag"
+                style="font-size: 0.7rem; background: rgba(0,212,255,0.1); color: var(--primary-color);">{{ s }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div style="border-top: 1px solid var(--glass-border); padding-top: 1rem; display: flex; justify-content: space-between; align-items: center;"
+            onclick="event.stopPropagation()">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                {% if idea.author.profile_pic %}
+                <img src="{{ idea.author.profile_pic.url }}"
+                    style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                {% else %}
+                <div
+                    style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: white; flex-shrink: 0;">
+                    {{ idea.author.name|slice:":2"|upper }}
+                </div>
+                {% endif %}
+                <div>
+                    <a href="{% url 'profile' user_id=idea.author.id %}"
+                        style="font-size: 0.85rem; font-weight: 600; color: var(--text-color); text-decoration: none;"
+                        onmouseover="this.style.color='var(--primary-color)'"
+                        onmouseout="this.style.color='var(--text-color)'">{{ idea.author.name }}</a>
+                    <p style="font-size: 0.7rem; color: var(--text-muted);">{{ idea.author.institution|default:'' }}</p>
+                </div>
+            </div>
+            <span style="font-size: 0.8rem; color: var(--primary-color); font-weight: 600;">View →</span>
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--text-muted);">
+        <p style="font-size: 1.2rem; margin-bottom: 1rem;">No research ideas yet. Be the first!</p>
+        {% if request.user.is_authenticated %}
+        <a href="{% url 'new_idea' %}" class="btn btn-primary">Post an Idea</a>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    function filterIdeas() {
+        const search = document.getElementById('searchInput').value.toLowerCase().trim();
+        const field = document.getElementById('fieldFilter').value;
+        let visible = 0;
+        document.querySelectorAll('.idea-card').forEach(card => {
+            const title = card.dataset.title;
+            const keywords = card.dataset.keywords;
+            const author = card.dataset.author;
+            const matchSearch = !search || title.includes(search) || keywords.includes(search) || author.includes(search);
+            const matchField = !field || card.dataset.field === field;
+            const show = matchSearch && matchField;
+            card.style.display = show ? 'flex' : 'none';
+            if (show) visible++;
+        });
+        // Show researcher hint if searching by name
+        const hint = document.getElementById('researcherHint');
+        const link = document.getElementById('researcherLink');
+        if (search && search.length > 1) {
+            hint.style.display = 'block';
+            link.href = `/researchers?q=${encodeURIComponent(search)}`;
+            link.textContent = `Find researchers named "${search}" →`;
+        } else {
+            hint.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

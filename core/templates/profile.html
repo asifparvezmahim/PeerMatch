@@ -1,0 +1,147 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="animate" style="max-width: 950px; margin: 0 auto;">
+
+    <!-- ── Header Card ──────────────────────────────────────────────────── -->
+    <div class="glass" style="padding: 2rem; margin-bottom: 2rem;">
+        <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
+            <!-- Avatar -->
+            <div style="flex-shrink: 0;">
+                {% if user.profile_pic %}
+                <img src="{{ user.profile_pic.url }}"
+                    style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color);">
+                {% else %}
+                <div
+                    style="width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; color: white;">
+                    {{ user.name|slice:":2"|upper }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Info -->
+            <div style="flex: 1; min-width: 200px;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.4rem; flex-wrap: wrap;">
+                    <h1 style="font-size: 1.7rem;">{{ user.name }}</h1>
+                    {% if user.role == 'admin' %}
+                    <span class="badge"
+                        style="background: rgba(112,0,255,0.35); color: var(--secondary-color);">Admin</span>
+                    {% endif %}
+                </div>
+                <p style="color: var(--primary-color); font-weight: 600; margin-bottom: 0.4rem;">{{user.research_field|default:'Researcher' }}</p>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem;">
+                    🏛️ {{ user.institution|default:'Independent Researcher' }}
+                    &nbsp;|&nbsp; ✉️ {{ user.email }}
+                </p>
+                {% if user.interests %}
+                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem;">
+                    {% for i in user.interests_list %}
+                    <span class="tag" style="font-size: 0.75rem;">{{ i }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <!-- Actions -->
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                    <a href="{% url 'conversation' user_id=user.id %}" class="btn btn-primary"
+                        style="padding: 0.4rem 1rem; font-size: 0.85rem;">💬 Message</a>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div style="display: flex; gap: 2rem; flex-shrink: 0; text-align: center;">
+                <div>
+                    <div style="font-size: 1.8rem; font-weight: 700; color: var(--primary-color);">{{ ideas|length }}
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Ideas</div>
+                </div>
+                <div>
+                    <div style="font-size: 1.8rem; font-weight: 700; color: var(--secondary-color);">{{ accepted_collabs
+                        }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Collabs</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Full Profile Details (all sections) ─────────────────────────── -->
+    <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+
+        {% if user.skillset %}
+        <div class="glass" style="padding: 1.5rem;">
+            <h3 style="color: var(--primary-color); font-size: 0.95rem; margin-bottom: 0.75rem;">🛠️ Skillset</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+                {% for s in user.skillset_list %}
+                <span class="tag" style="font-size: 0.75rem;">{{ s }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if user.education %}
+        <div class="glass" style="padding: 1.5rem;">
+            <h3 style="color: var(--primary-color); font-size: 0.95rem; margin-bottom: 0.75rem;">🎓 Education</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; white-space: pre-wrap; line-height: 1.7;">{{
+                user.education }}</p>
+        </div>
+        {% endif %}
+
+        {% if user.experience %}
+        <div class="glass" style="padding: 1.5rem;">
+            <h3 style="color: var(--primary-color); font-size: 0.95rem; margin-bottom: 0.75rem;">💼 Experience</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; white-space: pre-wrap; line-height: 1.7;">{{
+                user.experience }}</p>
+        </div>
+        {% endif %}
+
+        {% if user.ongoing_work %}
+        <div class="glass" style="padding: 1.5rem;">
+            <h3 style="color: var(--warning); font-size: 0.95rem; margin-bottom: 0.75rem;">🔬 Ongoing Work</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; white-space: pre-wrap; line-height: 1.7;">{{
+                user.ongoing_work }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if user.previous_work %}
+    <div class="glass" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+        <h3 style="color: var(--secondary-color); font-size: 0.95rem; margin-bottom: 0.75rem;">📄 Previous Work &amp;
+            Publications</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem; white-space: pre-wrap; line-height: 1.8;">{{
+            user.previous_work }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Placeholder if profile is empty -->
+    {% if not user.skillset and not user.education and not user.experience and not user.ongoing_work and not
+    user.previous_work %}
+    <div class="glass" style="padding: 1.5rem; margin-bottom: 1.5rem; text-align: center; color: var(--text-muted);">
+        <p>This researcher hasn't added their background information yet.</p>
+    </div>
+    {% endif %}
+
+    <!-- ── Research Ideas ───────────────────────────────────────────────── -->
+    <h2 style="margin-bottom: 1.25rem; margin-top: 0.5rem;">Research Ideas by {{ user.name }}</h2>
+    {% if ideas %}
+    <div class="grid">
+        {% for idea in ideas %}
+        <div class="glass card animate" style="animation-delay: {{ forloop.counter0|min:3|stringformat:'d' }}0.05s;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                <span class="tag">{{ idea.field }}</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">{{ idea.date_posted|date:"M d, Y" }}</span>
+            </div>
+            <h3 style="color: var(--primary-color); margin-bottom: 0.5rem; font-size: 1rem;">{{ idea.title }}</h3>
+            <p
+                style="color: var(--text-muted); font-size: 0.85rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; flex: 1; margin-bottom: 1rem;">
+                {{ idea.description }}</p>
+            <a href="{% url 'idea_detail' idea_id=idea.id %}" class="btn btn-outline"
+                style="width: 100%; padding: 0.45rem; font-size: 0.85rem;">View Details →</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="glass" style="padding: 2rem; text-align: center; color: var(--text-muted);">No ideas posted yet.</div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,195 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="animate" style="max-width: 950px; margin: 0 auto;">
+
+    <!-- Header with quick actions -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h1 style="font-size: 1.8rem;">My <span style="color: var(--primary-color);">Profile</span></h1>
+        <div style="display: flex; gap: 0.75rem;">
+            <a href="{% url 'edit_profile' %}" class="btn btn-primary" style="padding: 0.5rem 1.25rem;">✏️ Edit
+                Profile</a>
+            <a href="{% url 'new_idea' %}" class="btn btn-outline" style="padding: 0.5rem 1.25rem;">+ New Idea</a>
+        </div>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="glass" style="padding: 2rem; margin-bottom: 2rem;">
+        <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
+            <!-- Avatar -->
+            <div style="flex-shrink: 0; position: relative;">
+                {% if user.profile_pic %}
+                <img src="{{ user.profile_pic.url }}"
+                    style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color);">
+                {% else %}
+                <div
+                    style="width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; color: white;">
+                    {{ user.name|slice:":2"|upper }}
+                </div>
+                {% endif %}
+                <a href="{% url 'edit_profile' %}" title="Change picture"
+                    style="position: absolute; bottom: 0; right: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; text-decoration: none;">📷</a>
+            </div>
+            <!-- Info -->
+            <div style="flex: 1; min-width: 200px;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.4rem; flex-wrap: wrap;">
+                    <h2 style="font-size: 1.6rem;">{{ user.name }}</h2>
+                    <span class="badge"
+                        style="background: var(--primary-color); color: black; font-size: 0.7rem;">You</span>
+                </div>
+                <p style="color: var(--primary-color); font-weight: 600; margin-bottom: 0.4rem;">{{user.research_field|default:'Researcher' }}</p>
+                <p style="color: var(--text-muted); margin-bottom: 0.75rem; font-size: 0.9rem;">🏛️ {{user.institution|default:'Independent' }} &nbsp;|&nbsp; ✉️ {{ user.email }}</p>
+                {% if user.interests %}
+                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                    {% for i in user.interests_list %}
+                    <span class="tag" style="font-size: 0.75rem;">{{ i }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <!-- Stats -->
+            <div style="display: flex; gap: 2rem; flex-shrink: 0;">
+                <div style="text-align: center;">
+                    <div style="font-size: 1.8rem; font-weight: 700; color: var(--primary-color);">{{ ideas|length }}
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Ideas</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 1.8rem; font-weight: 700; color: var(--secondary-color);">{{ accepted_collabs }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Collabs</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 1.8rem; font-weight: 700; color: var(--warning);">{{ pending_received_count}}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Pending</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Details (condensed) -->
+    {% if user.skillset or user.education or user.experience %}
+    <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+        {% if user.skillset %}
+        <div class="glass" style="padding: 1.25rem;">
+            <h4 style="color: var(--primary-color); margin-bottom: 0.75rem; font-size: 0.9rem;">🛠️ Skillset</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.3rem;">
+                {% for s in user.skillset_list %}
+                <span class="tag" style="font-size: 0.75rem;">{{ s }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% if user.education %}
+        <div class="glass" style="padding: 1.25rem;">
+            <h4 style="color: var(--primary-color); margin-bottom: 0.75rem; font-size: 0.9rem;">🎓 Education</h4>
+            <p style="color: var(--text-muted); font-size: 0.85rem; white-space: pre-wrap;">{{ user.education }}</p>
+        </div>
+        {% endif %}
+        {% if user.experience %}
+        <div class="glass" style="padding: 1.25rem;">
+            <h4 style="color: var(--primary-color); margin-bottom: 0.75rem; font-size: 0.9rem;">💼 Experience</h4>
+            <p style="color: var(--text-muted); font-size: 0.85rem; white-space: pre-wrap;">{{ user.experience }}</p>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="glass"
+        style="padding: 1.25rem; margin-bottom: 2rem; border: 1px dashed rgba(0,212,255,0.3); display: flex; align-items: center; gap: 1rem;">
+        <span style="font-size: 1.5rem;">📋</span>
+        <div>
+            <p style="font-weight: 600; margin-bottom: 0.25rem;">Your profile is incomplete</p>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Add your skills, education, and experience to
+                attract collaborators.</p>
+        </div>
+        <a href="{% url 'edit_profile' %}" class="btn btn-primary"
+            style="margin-left: auto; padding: 0.4rem 1rem; font-size: 0.85rem; flex-shrink: 0;">Complete Profile</a>
+    </div>
+    {% endif %}
+
+    <!-- Collab Requests -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+        <!-- Received -->
+        <div class="glass" style="padding: 1.5rem;">
+            <h3 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1rem;">📥 Received Requests ({{received|length }})</h3>
+            {% for req in received %}
+            <div
+                style="padding: 0.75rem 0; border-bottom: 1px solid var(--glass-border); {% if forloop.last %}border: none;{% endif %}">
+                <p style="font-size: 0.85rem; margin-bottom: 0.4rem;">
+                    <a href="{% url 'profile' user_id=req.from_user.id %}"
+                        style="color: var(--primary-color); text-decoration: none; font-weight: 600;">{{req.from_user.name }}</a>
+                    wants to collab on <em>{{ req.idea.title }}</em>
+                </p>
+                {% if req.status == 'Pending' %}
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="{% url 'respond_request' req.id 'Accepted' %}" class="btn btn-outline"
+                        style="padding: 0.2rem 0.7rem; font-size: 0.75rem; border-color: var(--success); color: var(--success);">Accept</a>
+                    <a href="{% url 'respond_request' req.id 'Rejected' %}" class="btn btn-outline"
+                        style="padding: 0.2rem 0.7rem; font-size: 0.75rem; border-color: var(--danger); color: var(--danger);">Reject</a>
+                </div>
+                {% else %}
+                <span class="badge badge-{{ req.status|lower }}">{{ req.status }}</span>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p style="color: var(--text-muted); font-size: 0.85rem;">No requests received.</p>
+            {% endfor %}
+        </div>
+        <!-- Sent -->
+        <div class="glass" style="padding: 1.5rem;">
+            <h3 style="color: var(--secondary-color); margin-bottom: 1rem; font-size: 1rem;">📤 Sent Requests ({{sent|length }})</h3>
+            {% for req in sent %}
+            <div
+                style="padding: 0.75rem 0; border-bottom: 1px solid var(--glass-border); {% if forloop.last %}border: none;{% endif %}">
+                <p style="font-size: 0.85rem; margin-bottom: 0.3rem;">
+                    <em>{{ req.idea.title }}</em> →
+                    <a href="{% url 'profile' user_id=req.to_user.id %}"
+                        style="color: var(--secondary-color); text-decoration: none; font-weight: 600;">{{
+                        req.to_user.name }}</a>
+                </p>
+                <span class="badge badge-{{ req.status|lower }}">{{ req.status }}</span>
+            </div>
+            {% empty %}
+            <p style="color: var(--text-muted); font-size: 0.85rem;">No requests sent.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- My Ideas -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h2>My Research Ideas</h2>
+        <a href="{% url 'new_idea' %}" class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.85rem;">+
+            Post New</a>
+    </div>
+    {% if ideas %}
+    <div class="grid">
+        {% for idea in ideas %}
+        <div class="glass card animate">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                <span class="tag">{{ idea.field }}</span>
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="{% url 'edit_idea' id=idea.id %}" class="btn btn-outline"
+                        style="padding: 0.15rem 0.6rem; font-size: 0.75rem;">Edit</a>
+                    <a href="{% url 'delete_idea' id=idea.id %}" class="btn btn-outline"
+                        style="padding: 0.15rem 0.6rem; font-size: 0.75rem; border-color: var(--danger); color: var(--danger);"
+                        onclick="return confirm('Delete this idea?')">Delete</a>
+                </div>
+            </div>
+            <h3 style="color: var(--primary-color); margin-bottom: 0.5rem; font-size: 1rem;">{{ idea.title }}</h3>
+            <p
+                style="color: var(--text-muted); font-size: 0.85rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; flex: 1; margin-bottom: 1rem;">
+                {{ idea.description }}</p>
+            <a href="{% url 'idea_detail' idea_id=idea.id %}" class="btn btn-outline"
+                style="width: 100%; padding: 0.4rem; font-size: 0.8rem;">View Details</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="glass" style="padding: 2rem; text-align: center; color: var(--text-muted);">
+        <p style="margin-bottom: 1rem;">You haven't posted any research ideas yet.</p>
+        <a href="{% url 'new_idea' %}" class="btn btn-primary">Post Your First Idea</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

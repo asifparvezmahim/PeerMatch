@@ -1,0 +1,190 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-header animate">
+    <h1>Admin <span style="color: var(--secondary-color);">Control Panel</span></h1>
+    <p style="color: var(--text-muted);">Manage all users, ideas, and collaborations. Promote or demote admins.</p>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid animate">
+    <div class="glass stat-card">
+        <div class="stat-value">{{ user_count }}</div>
+        <div style="color: var(--text-muted);">Total Accounts</div>
+    </div>
+    <div class="glass stat-card">
+        <div class="stat-value">{{ idea_count }}</div>
+        <div style="color: var(--text-muted);">Total Ideas</div>
+    </div>
+    <div class="glass stat-card">
+        <div class="stat-value">{{ collab_count }}</div>
+        <div style="color: var(--text-muted);">Active Collabs</div>
+    </div>
+    <div class="glass stat-card">
+        <div class="stat-value">{{ collabs|length }}</div>
+        <div style="color: var(--text-muted);">Total Requests</div>
+    </div>
+</div>
+
+<!-- ===== USERS TABLE ===== -->
+<div class="glass animate" style="padding: 2rem; margin-bottom: 2rem;">
+    <h2 style="margin-bottom: 1.5rem; color: var(--primary-color);">All Accounts ({{ users|length }})</h2>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead>
+                <tr style="text-align: left; color: var(--text-muted); border-bottom: 2px solid var(--glass-border);">
+                    <th style="padding: 0.75rem 0.5rem;">ID</th>
+                    <th style="padding: 0.75rem 0.5rem;">Name</th>
+                    <th style="padding: 0.75rem 0.5rem;">Email</th>
+                    <th style="padding: 0.75rem 0.5rem;">Institution</th>
+                    <th style="padding: 0.75rem 0.5rem;">Field</th>
+                    <th style="padding: 0.75rem 0.5rem;">Role</th>
+                    <th style="padding: 0.75rem 0.5rem;">Status</th>
+                    <th style="padding: 0.75rem 0.5rem; min-width: 220px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr
+                    style="border-bottom: 1px solid var(--glass-border); {% if u.role == 'admin' %}background: rgba(112,0,255,0.06);{% endif %}">
+                    <td style="padding: 0.65rem 0.5rem; color: var(--text-muted);">{{ u.id }}</td>
+                    <td style="padding: 0.65rem 0.5rem; font-weight: 600;">
+                        <a href="{% url 'profile' user_id=u.id %}"
+                            style="color: var(--text-color); text-decoration: none;"
+                            onmouseover="this.style.color='var(--primary-color)'"
+                            onmouseout="this.style.color='var(--text-color)'">{{ u.name }}</a>
+                    </td>
+                    <td style="padding: 0.65rem 0.5rem; color: var(--text-muted); font-size: 0.82rem;">{{ u.email }}
+                    </td>
+                    <td style="padding: 0.65rem 0.5rem; color: var(--text-muted); font-size: 0.82rem;">{{
+                        u.institution|default:'—' }}</td>
+                    <td style="padding: 0.65rem 0.5rem; color: var(--text-muted); font-size: 0.82rem;">{{
+                        u.research_field|default:'—' }}</td>
+                    <td style="padding: 0.65rem 0.5rem;">
+                        <span class="badge"
+                            style="background: {% if u.role == 'admin' %}rgba(112,0,255,0.35){% else %}rgba(0,212,255,0.15){% endif %}; color: {% if u.role == 'admin' %}var(--secondary-color){% else %}var(--primary-color){% endif %};">
+                            {{ u.role|capfirst }}
+                        </span>
+                    </td>
+                    <td style="padding: 0.65rem 0.5rem;">
+                        <span class="badge"
+                            style="background: {% if u.status == 'active' %}rgba(16,185,129,0.2){% else %}rgba(239,68,68,0.2){% endif %}; color: {% if u.status == 'active' %}var(--success){% else %}var(--danger){% endif %};">
+                            {{ u.status|capfirst }}
+                        </span>
+                    </td>
+                    <td style="padding: 0.65rem 0.5rem;">
+                        {% if u.id == request.user.id %}
+                        <span style="color: var(--text-muted); font-size: 0.75rem; font-style: italic;">You
+                            (Protected)</span>
+                        {% else %}
+                        <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+                            <a href="{% url 'make_admin' user_id=u.id %}" class="btn btn-outline"
+                                style="padding: 0.15rem 0.55rem; font-size: 0.72rem; border-color: var(--secondary-color); color: var(--secondary-color);"
+                                onclick="return confirm(this.dataset.msg)"
+                                data-msg="{% if u.role == 'admin' %}Revoke admin from {{ u.name }}?{% else %}Make {{ u.name }} Admin?{% endif %}">
+                                {% if u.role == 'admin' %}⬇ Revoke Admin{% else %}⬆ Make Admin{% endif %}
+                            </a>
+                            <a href="{% url 'block_user' user_id=u.id %}" class="btn btn-outline"
+                                style="padding: 0.15rem 0.55rem; font-size: 0.72rem; border-color: {% if u.status == 'active' %}var(--danger){% else %}var(--success){% endif %}; color: {% if u.status == 'active' %}var(--danger){% else %}var(--success){% endif %};"
+                                onclick="return confirm(this.dataset.msg)"
+                                data-msg="{% if u.status == 'active' %}Block {{ u.name }}?{% else %}Unblock {{ u.name }}?{% endif %}">
+                                {% if u.status == 'active' %}🚫 Block{% else %}✅ Unblock{% endif %}
+                            </a>
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ===== IDEAS TABLE ===== -->
+<div class="glass animate" style="padding: 2rem; margin-bottom: 2rem;">
+    <h2 style="margin-bottom: 1.5rem; color: var(--primary-color);">All Research Ideas ({{ ideas|length }})</h2>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead>
+                <tr style="text-align: left; color: var(--text-muted); border-bottom: 2px solid var(--glass-border);">
+                    <th style="padding: 0.75rem;">ID</th>
+                    <th style="padding: 0.75rem;">Title</th>
+                    <th style="padding: 0.75rem;">Author</th>
+                    <th style="padding: 0.75rem;">Field</th>
+                    <th style="padding: 0.75rem;">Posted</th>
+                    <th style="padding: 0.75rem;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for idea in ideas %}
+                <tr style="border-bottom: 1px solid var(--glass-border);">
+                    <td style="padding: 0.65rem; color: var(--text-muted);">{{ idea.id }}</td>
+                    <td style="padding: 0.65rem; font-weight: 500; max-width: 220px;">
+                        <a href="{% url 'idea_detail' idea_id=idea.id %}"
+                            style="color: var(--text-color); text-decoration: none;"
+                            onmouseover="this.style.color='var(--primary-color)'"
+                            onmouseout="this.style.color='var(--text-color)'">{{ idea.title }}</a>
+                    </td>
+                    <td style="padding: 0.65rem;">
+                        <a href="{% url 'profile' user_id=idea.author.id %}"
+                            style="color: var(--primary-color); text-decoration: none;">{{ idea.author.name }}</a>
+                    </td>
+                    <td style="padding: 0.65rem;"><span class="tag">{{ idea.field }}</span></td>
+                    <td style="padding: 0.65rem; color: var(--text-muted); font-size: 0.8rem;">{{
+                        idea.date_posted|date:"Y-m-d" }}</td>
+                    <td style="padding: 0.65rem; display: flex; gap: 0.4rem;">
+                        <a href="{% url 'idea_detail' idea_id=idea.id %}" class="btn btn-outline"
+                            style="padding: 0.15rem 0.55rem; font-size: 0.72rem;">View</a>
+                        <a href="{% url 'delete_idea' id=idea.id %}" class="btn btn-outline"
+                            style="padding: 0.15rem 0.55rem; font-size: 0.72rem; border-color: var(--danger); color: var(--danger);"
+                            onclick="return confirm('Delete: {{ idea.title }}?')">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ===== COLLABORATION REQUESTS TABLE ===== -->
+<div class="glass animate" style="padding: 2rem; margin-bottom: 2rem;">
+    <h2 style="margin-bottom: 1.5rem; color: var(--primary-color);">All Collaboration Requests ({{ collabs|length }})
+    </h2>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead>
+                <tr style="text-align: left; color: var(--text-muted); border-bottom: 2px solid var(--glass-border);">
+                    <th style="padding: 0.75rem;">ID</th>
+                    <th style="padding: 0.75rem;">From</th>
+                    <th style="padding: 0.75rem;">To</th>
+                    <th style="padding: 0.75rem;">Idea</th>
+                    <th style="padding: 0.75rem;">Status</th>
+                    <th style="padding: 0.75rem;">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for collab in collabs %}
+                <tr style="border-bottom: 1px solid var(--glass-border);">
+                    <td style="padding: 0.65rem; color: var(--text-muted);">{{ collab.id }}</td>
+                    <td style="padding: 0.65rem;">
+                        <a href="{% url 'profile' user_id=collab.from_user.id %}"
+                            style="color: var(--primary-color); text-decoration: none;">{{ collab.from_user.name }}</a>
+                    </td>
+                    <td style="padding: 0.65rem;">
+                        <a href="{% url 'profile' user_id=collab.to_user.id %}"
+                            style="color: var(--primary-color); text-decoration: none;">{{ collab.to_user.name }}</a>
+                    </td>
+                    <td style="padding: 0.65rem; font-weight: 500; max-width: 200px;">{{ collab.idea.title }}</td>
+                    <td style="padding: 0.65rem;">
+                        <span class="badge badge-{{ collab.status|lower }}">{{ collab.status }}</span>
+                    </td>
+                    <td style="padding: 0.65rem; color: var(--text-muted); font-size: 0.8rem;">{{
+                        collab.timestamp|date:"Y-m-d H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

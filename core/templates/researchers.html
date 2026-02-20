@@ -1,0 +1,104 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="animate" style="max-width: 900px; margin: 0 auto;">
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="font-size: 1.8rem; margin-bottom: 0.3rem;">Find <span
+                    style="color: var(--primary-color);">Researchers</span></h1>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Search by name, institution, or research field</p>
+        </div>
+    </div>
+
+    <!-- Search form -->
+    <form method="GET" action="{% url 'researchers' %}">
+        <div class="glass" style="padding: 1.5rem; margin-bottom: 2rem;">
+            <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 1rem; align-items: end;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Name or Institution</label>
+                    <input type="text" name="q" value="{{ q }}"
+                        placeholder="Search by researcher name or institution...">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Field</label>
+                    <select name="field">
+                        <option value="">All Fields</option>
+                        {% for f in RESEARCH_FIELDS %}
+                        <option value="{{ f }}" {% if field == f %}selected{% endif %}>{{ f }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Results -->
+    {% if users %}
+    <p style="color: var(--text-muted); margin-bottom: 1.25rem; font-size: 0.9rem;">{{ users|length }} researcher{{
+        users|length|pluralize }} found</p>
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+        {% for u in users %}
+        <div class="glass card animate"
+            style="flex-direction: row; align-items: center; gap: 1.5rem; padding: 1.25rem; cursor: pointer;"
+            onclick="window.location='{% url 'profile' user_id=u.id %}'">
+            <!-- Avatar -->
+            <div style="flex-shrink: 0;" onclick="event.stopPropagation()">
+                {% if u.profile_pic %}
+                <img src="{{ u.profile_pic.url }}"
+                    style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-color);">
+                {% else %}
+                <div
+                    style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; color: white;">
+                    {{ u.name|slice:":2"|upper }}
+                </div>
+                {% endif %}
+            </div>
+            <!-- Info -->
+            <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem; flex-wrap: wrap;">
+                    <h3 style="font-size: 1.05rem;">{{ u.name }}</h3>
+                    {% if u.research_field %}
+                    <span class="tag" style="font-size: 0.7rem;">{{ u.research_field }}</span>
+                    {% endif %}
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.4rem;">🏛️ {{u.institution|default:'Independent Researcher' }}</p>
+                {% if u.interests %}
+                <div style="display: flex; flex-wrap: wrap; gap: 0.3rem;">
+                    {% for i in u.interests_list|slice:":4" %}
+                    <span class="tag" style="font-size: 0.7rem;">{{ i }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <!-- Stats + Actions -->
+            <div style="flex-shrink: 0; display: flex; gap: 1.5rem; align-items: center;"
+                onclick="event.stopPropagation()">
+                <div style="text-align: center;">
+                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--primary-color);">{{ u.ideas.count }}
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">Ideas</div>
+                </div>
+                <a href="{% url 'conversation' user_id=u.id %}" class="btn btn-outline"
+                    style="padding: 0.3rem 0.75rem; font-size: 0.8rem;">💬 Message</a>
+                <a href="{% url 'profile' user_id=u.id %}" class="btn btn-primary"
+                    style="padding: 0.3rem 0.75rem; font-size: 0.8rem;">View Profile</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% elif q or field %}
+    <div class="glass" style="padding: 3rem; text-align: center; color: var(--text-muted);">
+        <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">No researchers found</p>
+        <p>Try a different name or field.</p>
+    </div>
+    {% else %}
+    <div class="glass" style="padding: 3rem; text-align: center; color: var(--text-muted);">
+        <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">Search for researchers above</p>
+        <p>Enter a name or institution to find collaborators.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

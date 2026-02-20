@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 90vh; padding: 2rem 0;">
+    <div class="glass" style="padding: 3rem; width: 100%; max-width: 700px;">
+        <h2 style="margin-bottom: 0.5rem; font-size: 2rem;">Join PeerMatch</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Create your researcher profile to start collaborating.
+        </p>
+        <form method="POST">
+            {% csrf_token %}
+            <h4
+                style="color: var(--primary-color); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--glass-border);">
+                Account Details</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="name" required placeholder="Dr. Jane Doe">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" required placeholder="jane@univ.edu">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" required placeholder="••••••••">
+            </div>
+
+            <h4
+                style="color: var(--primary-color); margin: 1.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--glass-border);">
+                Research Profile</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>Institution</label>
+                    <input type="text" name="institution" placeholder="Stanford University">
+                </div>
+                <div class="form-group">
+                    <label>Research Field</label>
+                    <select name="research_field">
+                        {% for f in RESEARCH_FIELDS %}
+                        <option value="{{ f }}">{{ f }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Areas of Interest <span style="color: var(--text-muted); font-weight: 400;">(comma
+                        separated)</span></label>
+                <input type="text" name="interests"
+                    placeholder="Quantum Computing, Neural Networks, Climate Science...">
+            </div>
+
+            <h4
+                style="color: var(--secondary-color); margin: 1.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--glass-border);">
+                Professional Background <span
+                    style="font-size: 0.8rem; font-weight: 400; color: var(--text-muted);">(optional — can be added
+                    later)</span></h4>
+            <div class="form-group">
+                <label>Skillset <span style="color: var(--text-muted); font-weight: 400;">(comma
+                        separated)</span></label>
+                <input type="text" name="skillset" placeholder="Python, MATLAB, PCR, Electron Microscopy...">
+            </div>
+            <div class="form-group">
+                <label>Educational Background</label>
+                <textarea name="education" rows="2"
+                    placeholder="PhD in Physics, MIT 2020 | MSc Applied Math, Cambridge 2016..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Experience Summary</label>
+                <textarea name="experience" rows="2"
+                    placeholder="5 years in computational neuroscience at Johns Hopkins..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem; padding: 1rem;">Create
+                Researcher Profile</button>
+        </form>
+        <p style="text-align: center; margin-top: 1.5rem; color: var(--text-muted);">
+            Already have an account? <a href="{% url 'login' %}" style="color: var(--primary-color);">Sign in</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
