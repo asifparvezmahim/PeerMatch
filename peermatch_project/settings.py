@@ -13,7 +13,10 @@ SECRET_KEY = 'peermatch-platform-secret-key-django-converted'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [ "peermatch1.onrender.com",
+                  "localhost",
+                  "127.0.0.1",
+                ]
 
 # Application definition
 
